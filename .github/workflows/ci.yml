@@ -15,9 +15,6 @@ jobs:
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Start API
         run: |
           cd api
