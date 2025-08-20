@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { baseURL } from './Utils/config.js';
+import { baseURL } from './utils/config.js';
 import { encodedCredentials } from './helpers/auth.js';
 
 export const options = {
