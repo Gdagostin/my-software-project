@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+.env
+*.log
+
+# VSCode
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/reports/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Others
+dist/
+build/
+coverage/
+
+# Ignore requirements folder if needed
+docs/

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lançamentos - Controle Financeiro</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #181818; color: #f0f0f0; }
+    .container { max-width: 650px; margin: auto; }
+    .main { border: 1px solid #333; background: #222; padding: 28px; border-radius: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #222; color: #f0f0f0; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    td.descricao-col { word-break: break-word; max-width: 220px; white-space: pre-line; }
+        th { background: #333; }
+        .totalizador { margin-top: 20px; font-weight: bold; }
+        .total-receitas { color: #00e676; }
+        .total-despesas { color: #00e676; }
+        .total-saldo { color: #2196f3; }
+        .actions button { margin-right: 5px; background: #333; color: #f0f0f0; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .actions button:hover { background: #444; }
+        input, select { background: #181818; color: #f0f0f0; border: 1px solid #333; padding: 6px; border-radius: 4px; }
+        input:focus, select:focus { outline: 2px solid #00e676; }
+        button { background: #00e676; color: #181818; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #00c853; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="text-align:center; margin-bottom:20px;">
+        <img src="https://cdn-icons-png.flaticon.com/128/3040/3040978.png" alt="Logo Finanças" style="width:64px; height:64px;">
+    </div>
+    <div class="main" id="mainBox">
+        <h2>Lançamento</h2>
+        <div style="display: flex; gap: 10px;">
+            <select id="tipo" style="min-width: 100px;">
+                <option value="receita">Receita</option>
+                <option value="despesa">Despesa</option>
+            </select>
+            <input type="text" id="descricao" placeholder="Descrição" style="flex: 1; min-width: 200px;" maxlength="100">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <input type="date" id="data" style="flex: 1; min-width: 120px;">
+            <input type="text" id="valor" placeholder="Valor" style="flex: 1; min-width: 120px;" maxlength="11" inputmode="decimal" value="0,00" onfocus="this.select()">
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 10px;">
+            <button onclick="adicionarLancamento()" style="width: 180px;">Adicionar</button>
+        </div>
+        <br>
+        <h3>Lançamentos</h3>
+        <table id="tabelaLancamentos">
+            <thead>
+                <tr><th>Tipo</th><th>Descrição</th><th>Data</th><th>Valor</th><th>Ações</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="totalizador" id="totalizador"></div>
+    </div>
+</div>
+<script>
+let lancamentos = [];
+let editandoId = null;
+let usuarioLogado = localStorage.getItem('usuarioLogado') || '';
+let senhaLogada = localStorage.getItem('senhaLogada') || '';
+
+if (!usuarioLogado || !senhaLogada) {
+    window.location.href = 'login.html';
+}
+
+// Seta data atual ao carregar
+window.addEventListener('DOMContentLoaded', function() {
+    const dataInput = document.getElementById('data');
+    if (dataInput) {
+        const hoje = new Date();
+        const yyyy = hoje.getFullYear();
+        const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoje.getDate()).padStart(2, '0');
+        dataInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+});
+
+// Máscara para campo valor: 0,00 até 11 dígitos
+const valorInput = document.getElementById('valor');
+if (valorInput) {
+    valorInput.value = '0,00';
+    valorInput.addEventListener('focus', function() {
+        setTimeout(() => this.select(), 1);
+    });
+    valorInput.addEventListener('input', function(e) {
+        let v = this.value.replace(/\D/g, '');
+        if (v.length > 11) v = v.slice(0, 11);
+        if (v.length === 0) {
+            this.value = '0,00';
+        } else if (v.length === 1) {
+            this.value = '0,0' + v;
+        } else if (v.length === 2) {
+            this.value = '0,' + v;
+        } else {
+            let intPart = v.slice(0, v.length - 2);
+            let decPart = v.slice(-2);
+            this.value = intPart + ',' + decPart;
+        }
+    });
+}
+
+function getAuthHeader() {
+    return { 'Authorization': 'Basic ' + btoa(`${usuarioLogado}:${senhaLogada}`), 'Content-Type': 'application/json' };
+}
+
+function carregarLancamentos() {
+    fetch('http://localhost:3000/lancamentos', {
+        method: 'GET',
+        headers: getAuthHeader()
+    })
+    .then(res => res.json())
+    .then(data => {
+        lancamentos = data;
+        atualizarTabela();
+        atualizarTotalizador();
+    });
+}
+
+function adicionarLancamento() {
+    const tipo = document.getElementById('tipo').value;
+    const descricao = document.getElementById('descricao').value;
+    const data = document.getElementById('data').value;
+    let valorStr = document.getElementById('valor').value.replace(/\./g, '').replace(/,/g, '.');
+    const valor = parseFloat(valorStr);
+    if (!data || isNaN(valor)) {
+        alert('Preencha todos os campos corretamente!');
+        return;
+    }
+    const body = { tipo, descricao, data, valor };
+    if (editandoId !== null) {
+        fetch(`http://localhost:3000/lancamentos/${editandoId}`, {
+            method: 'PUT',
+            headers: getAuthHeader(),
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(() => {
+            editandoId = null;
+            document.getElementById('descricao').value = '';
+            document.getElementById('data').value = '';
+            const valorInput = document.getElementById('valor');
+            valorInput.value = '0,00';
+            setTimeout(() => valorInput.select(), 1);
+            carregarLancamentos();
+        });
+    } else {
+        fetch('http://localhost:3000/lancamentos', {
+            method: 'POST',
+            headers: getAuthHeader(),
+            body: JSON.stringify(body)
+        })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById('descricao').value = '';
+            document.getElementById('data').value = '';
+            const valorInput = document.getElementById('valor');
+            valorInput.value = '0,00';
+            setTimeout(() => valorInput.select(), 1);
+            carregarLancamentos();
+        });
+    }
+}
+
+function atualizarTabela() {
+    const tbody = document.getElementById('tabelaLancamentos').querySelector('tbody');
+    tbody.innerHTML = '';
+    lancamentos.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${l.tipo}</td><td class='descricao-col'>${l.descricao || ''}</td><td>${l.data}</td><td>R$ ${l.valor.toFixed(2).replace('.', ',')}</td>
+            <td class='actions'>
+                <button onclick='editarLancamento(${l.id})'>Editar</button>
+                <button onclick='excluirLancamento(${l.id})'>Excluir</button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function editarLancamento(id) {
+    const l = lancamentos.find(l => l.id === id);
+    document.getElementById('tipo').value = l.tipo;
+    document.getElementById('descricao').value = l.descricao;
+    document.getElementById('data').value = l.data;
+    document.getElementById('valor').value = l.valor.toFixed(2).replace('.', ',');
+    editandoId = id;
+}
+
+function excluirLancamento(id) {
+    fetch(`http://localhost:3000/lancamentos/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+    })
+    .then(() => carregarLancamentos());
+}
+
+function atualizarTotalizador() {
+    fetch('http://localhost:3000/totalizador', {
+        method: 'GET',
+        headers: getAuthHeader()
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('totalizador').innerHTML =
+            `<span class='total-receitas'>Receitas: R$ ${data.total_receitas.toFixed(2).replace('.', ',')}</span> | <span class='total-despesas'>Despesas: R$ ${data.total_despesas.toFixed(2).replace('.', ',')}</span> | <span class='total-saldo'>Saldo: R$ ${data.saldo.toFixed(2).replace('.', ',')}</span>`;
+    });
+}
+
+carregarLancamentos();
+</script>
+</body>
+</html>

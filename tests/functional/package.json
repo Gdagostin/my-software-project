@@ -1,0 +1,17 @@
+{
+  "name": "functional",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx cypress run",
+    "open": "npx cypress open"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cypress": "^14.5.4",
+    "cypress-mochawesome-reporter": "^3.8.4"
+  }
+}

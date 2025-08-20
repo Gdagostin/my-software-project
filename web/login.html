@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Controle Financeiro</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #181818; color: #f0f0f0; }
+        .container { max-width: 500px; margin: auto; }
+        .login { border: 1px solid #333; background: #222; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+        .login input, .login button { width: 50%; margin-bottom: 10px; font-size: 0.95em; }
+        .hidden { display: none; }
+        button { background: #00e676; color: #181818; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #00c853; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="text-align:center; margin-bottom:20px;">
+        <img src="https://cdn-icons-png.flaticon.com/128/3040/3040978.png" alt="Logo Finanças" style="width:64px; height:64px;">
+    </div>
+    <div class="login" id="loginBox">
+        <h2>Login</h2>
+        <input type="text" id="usuario" placeholder="Usuário (Tester)">
+        <input type="password" id="senha" placeholder="Senha (12345)">
+        <button onclick="login()">Entrar</button>
+        <div id="loginMsg" style="color:#ff5252;"></div>
+    </div>
+</div>
+<script>
+function login() {
+    const usuario = document.getElementById('usuario').value;
+    const senha = document.getElementById('senha').value;
+    fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + btoa(`${usuario}:${senha}`)
+        },
+        body: JSON.stringify({ username: usuario, password: senha })
+    })
+    .then(res => {
+        if (res.ok) {
+            localStorage.setItem('usuarioLogado', usuario);
+            localStorage.setItem('senhaLogada', senha);
+            window.location.href = 'lancamentos.html';
+        } else {
+            document.getElementById('loginMsg').innerText = 'Usuário ou senha inválidos';
+        }
+    });
+}
+</script>
+</body>
+</html>
