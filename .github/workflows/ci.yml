@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Cypress tests
         run: |
-          cd functional
+          cd cd tests/functional
           npm install || true
           nohup npx cypress run &
           sleep 5
