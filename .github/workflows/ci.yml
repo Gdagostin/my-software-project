@@ -33,8 +33,7 @@ jobs:
         run: |
           cd tests/functional
           npm install || true
-          nohup npx cypress run &
-          sleep 5
+          npx cypress run
 
       - name: Setup k6
         uses: grafana/setup-k6-action@v1 # Install k6
