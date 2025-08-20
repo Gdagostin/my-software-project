@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { baseURL } from '/Utils/config.js';
-import { encodedCredentials } from '/helpers/auth.js';
+import { baseURL } from './Utils/config.js';
+import { encodedCredentials } from './helpers/auth.js';
 
 export const options = {
   vus: 100,
