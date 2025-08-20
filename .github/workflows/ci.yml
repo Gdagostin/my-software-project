@@ -36,5 +36,15 @@ jobs:
           nohup npx cypress run &
           sleep 5
 
-      - name: Run K6 tests
-        run: k6 run tests/performance/*.js
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1 # Install k6
+
+      - name: Run k6 tests
+        uses: grafana/run-k6-action@v1 # Execute k6 tests
+        with:
+          path: |
+            ./tests/performance/ct01-login.test.js
+            ./tests/performance/ct02-lancamentos.test.js
+            ./tests/performance/ct03-listagem.test.js
+            ./tests/performance/ct04-totalizador.test.js
+            ./tests/performance/ct05-estabilidade.test.js
