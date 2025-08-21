@@ -22,10 +22,10 @@ Projeto final da <strong>Mentoria 2.0</strong> do [Julio de Lima](https://github
 
 
 ### 🔐 Tela de Login
-![Tela de Login](image.png)
+![Tela de Login](image/image.png)
 
 ### 📊 Tela de Lançamentos
-![Tela de Lançamentos](image-1.png)
+![Tela de Lançamentos](image/image-1.png)
 
 ## 📋 Sobre o Projeto
 
@@ -106,6 +106,7 @@ git clone https://github.com/Gdagostin/my-software-project.git
 
 - **API:** http://localhost:3000
 - **Web:** http://localhost:4000
+- **Swagger:** http://localhost:3000/api-docs
 
 ## 🧪 Testes Automatizados
 - **Cypress:** Testes funcionais, API e E2E (login, lançamentos, validações, interface)
