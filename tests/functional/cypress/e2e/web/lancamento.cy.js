@@ -109,7 +109,7 @@ describe('Tabela Listagem', () => {
     it('Campos da Tabela Listagem', () => {
 
         cy.get('#tabelaLancamentos th')
-            .should('contain', 'Tipo')
+            .should('be.visible').and('contain', 'Tipo')
             .and('contain', 'Descrição')
             .and('contain', 'Data')
             .and('contain', 'Valor')

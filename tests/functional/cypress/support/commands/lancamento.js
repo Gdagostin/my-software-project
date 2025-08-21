@@ -2,10 +2,10 @@ const apiUrl = Cypress.env('API_URL');
 const encoded = btoa('Tester:12345');
 
 Cypress.Commands.add('realizarLancamento', (tipo, descricao, data, valor) => {
-    cy.get('#tipo').select(tipo)
-    cy.get('#descricao').clear().type(descricao)
-    cy.get('#data').type(data)
-    cy.get('#valor').type(valor)
+    cy.get('#tipo').should('be.visible').select(tipo)
+    cy.get('#descricao').should('be.visible').clear().type(descricao)
+    cy.get('#data').should('be.visible').type(data)
+    cy.get('#valor').should('be.visible').type(valor)
     cy.contains('button', 'Adicionar').click()
 })
 
